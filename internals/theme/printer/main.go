@@ -1,7 +1,7 @@
 package printer
 
 import (
-	"cligram/internal/theme/tokens"
+	"cligram/internals/theme/tokens"
 
 	"github.com/gookit/color"
 )

@@ -1,7 +1,7 @@
 package db
 
 import (
-	"cligram/internal/theme/printer"
+	"cligram/internals/theme/printer"
 	"context"
 	"os"
 	"sync"

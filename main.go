@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cligram/internal/db"
+	"cligram/internals/db"
 )
 
 func main() {
