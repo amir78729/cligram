@@ -1,30 +1,33 @@
 package cli
 
 import (
-	"cligram/internal/app"
+	"flag"
 	"fmt"
 	"strings"
 )
 
-func chatCmd(service *app.ChatService, args []string) {
+func ChatCmd(args []string) {
 	if len(args) < 1 {
-		fmt.Println("Usage: cligram chat create <id> <member1,member2,...>")
+		fmt.Println("Expected chat subcommand: create")
 		return
 	}
+
 	switch args[0] {
 	case "create":
-		if len(args) != 3 {
-			fmt.Println("Usage: cligram chat create <id> <member1,member2,...>")
+		fs := flag.NewFlagSet("create", flag.ExitOnError)
+		id := fs.String("id", "", "chat ID")
+		members := fs.String("members", "", "comma-separated user IDs")
+		fs.Parse(args[1:])
+
+		if *id == "" || *members == "" {
+			fmt.Println("id and members are required")
 			return
 		}
-		id := args[1]
-		members := strings.Split(args[2], ",")
-		if err := service.CreateChat(id, members); err != nil {
-			fmt.Println("Error:", err)
-			return
-		}
-		fmt.Println("Chat created:", id)
+
+		memberList := strings.Split(*members, ",")
+		postJSON("/chats", map[string]interface{}{"id": *id, "members": memberList})
+
 	default:
-		fmt.Println("Unknown chat command:", args[0])
+		fmt.Println("Unknown chat subcommand:", args[0])
 	}
 }

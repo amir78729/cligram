@@ -1,20 +1,28 @@
 package main
 
 import (
-	"cligram/internal/app"
 	"cligram/internal/cli"
-	"cligram/internal/db"
+	"os"
 )
 
 func main() {
-	client := db.Connect()
+	if len(os.Args) < 2 {
+		printUsage()
+		return
+	}
 
-	users := db.NewUserRepo(client)
-	chats := db.NewChatRepo(client)
-	messages := db.NewMessageRepo(client)
+	switch os.Args[1] {
+	case "user":
+		cli.UserCmd(os.Args[2:])
+	case "chat":
+		cli.ChatCmd(os.Args[2:])
+	case "msg":
+		cli.MsgCmd(os.Args[2:])
+	default:
+		printUsage()
+	}
+}
 
-	service := app.NewChatService(users, chats, messages)
-
-	c := cli.NewCLI(service)
-	c.Execute()
+func printUsage() {
+	println("Usage: cligram <user|chat|msg> ...")
 }
