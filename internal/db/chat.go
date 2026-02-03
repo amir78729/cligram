@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -58,4 +59,24 @@ func (r *ChatRepo) GetByID(id string) (domain.Chat, error) {
 		return domain.Chat{}, err
 	}
 	return c, nil
+}
+
+func (r *ChatRepo) ListByUser(userID string) ([]domain.Chat, error) {
+	filter := bson.M{"members": userID}
+	cur, err := r.collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(context.Background())
+
+	var chats []domain.Chat
+	for cur.Next(context.Background()) {
+		var chat domain.Chat
+		if err := cur.Decode(&chat); err != nil {
+			return nil, err
+		}
+		chats = append(chats, chat)
+	}
+
+	return chats, nil
 }

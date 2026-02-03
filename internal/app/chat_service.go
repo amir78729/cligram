@@ -4,7 +4,11 @@ import (
 	"cligram/internal/domain"
 	"cligram/internal/domain/repository"
 	"errors"
+	"fmt"
+	"slices"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ChatService struct {
@@ -19,11 +23,6 @@ func NewChatService(
 	messages repository.MessageRepository,
 ) *ChatService {
 	return &ChatService{users, chats, messages}
-}
-
-// We’ll replace it later with UUID / snowflake.
-func generateID() string {
-	return time.Now().Format("20060102150405.000000000")
 }
 
 func (s *ChatService) SendMessage(
@@ -57,7 +56,7 @@ func (s *ChatService) SendMessage(
 
 	// 4. persist message
 	msg := domain.Message{
-		ID:        generateID(),
+		ID:        fmt.Sprintf("%s-%d", uuid.NewString(), time.Now().UnixNano()),
 		From:      fromUserID,
 		ChatID:    chatID,
 		Text:      text,
@@ -78,6 +77,14 @@ func (s *ChatService) CreateUser(id, name string) error {
 	}
 
 	return s.users.Create(user)
+}
+
+func (s *ChatService) GetChatByID(chatID string) (domain.Chat, error) {
+	chat, err := s.chats.GetByID(chatID)
+	if err != nil {
+		return domain.Chat{}, domain.ErrChatNotFound
+	}
+	return chat, nil
 }
 
 func (s *ChatService) CreateChat(id string, memberIDs []string) error {
@@ -115,17 +122,21 @@ func (s *ChatService) ListMessages(
 		return nil, domain.ErrChatNotFound
 	}
 
-	isMember := false
-	for _, id := range chat.Members {
-		if id == requestingUserID {
-			isMember = true
-			break
-		}
-	}
+	isMember := slices.Contains(chat.Members, requestingUserID)
 
 	if !isMember {
 		return nil, domain.ErrUserNotInChat
 	}
 
 	return s.messages.ListByChat(chatID)
+}
+
+func (s *ChatService) ListUserChats(userID string) ([]domain.Chat, error) {
+	// check if user exists
+	_, err := s.users.GetByID(userID)
+	if err != nil {
+		return nil, domain.ErrUserNotFound
+	}
+
+	return s.chats.ListByUser(userID)
 }

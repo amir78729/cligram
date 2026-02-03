@@ -25,7 +25,7 @@ func ChatCmd(args []string) {
 		}
 
 		memberList := strings.Split(*members, ",")
-		postJSON("/chats", map[string]interface{}{"id": *id, "members": memberList})
+		postJSON(serverURL, "/chats", map[string]interface{}{"id": *id, "members": memberList})
 
 	default:
 		fmt.Println("Unknown chat subcommand:", args[0])

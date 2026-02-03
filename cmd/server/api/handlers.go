@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type Server struct {
@@ -94,4 +96,56 @@ func (s *Server) ListMessagesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("ListMessagesHandler: returned %d messages for user %s in chat %s", len(msgs), userID, chatID)
+}
+
+func (s *Server) ListChatsHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		log.Printf("ListChatsHandler missing user_id parameter")
+		http.Error(w, "user_id is required", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("ListChatsHandler: listing chats for user %s", userID)
+	chats, err := s.Service.ListUserChats(userID)
+	if err != nil {
+		log.Printf("ListChatsHandler error: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(chats); err != nil {
+		log.Printf("ListChatsHandler encode error: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("ListChatsHandler: returned %d chats for user %s", len(chats), userID)
+}
+
+func (s *Server) GetChatHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	chatID := vars["id"]
+	
+	if chatID == "" {
+		log.Printf("GetChatHandler missing chat_id in path")
+		http.Error(w, "chat_id is required", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("GetChatHandler: getting chat %s", chatID)
+	chat, err := s.Service.GetChatByID(chatID)
+	if err != nil {
+		log.Printf("GetChatHandler error: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(chat); err != nil {
+		log.Printf("GetChatHandler encode error: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("GetChatHandler: returned chat %s", chatID)
 }

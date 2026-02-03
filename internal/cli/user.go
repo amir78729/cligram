@@ -23,7 +23,7 @@ func UserCmd(args []string) {
 			return
 		}
 
-		postJSON("/users", map[string]string{"id": *id, "name": *name})
+		postJSON(serverURL, "/users", map[string]string{"id": *id, "name": *name})
 
 	default:
 		fmt.Println("Unknown user subcommand:", args[0])

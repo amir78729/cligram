@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MessageRepo struct {
@@ -16,17 +15,6 @@ type MessageRepo struct {
 
 func NewMessageRepo(client *mongo.Client) *MessageRepo {
 	coll := client.Database("cligram-db").Collection(string(MessagesCollection))
-
-	// ensure unique index on "id"
-	indexModel := mongo.IndexModel{
-		Keys:    map[string]int{"id": 1},
-		Options: options.Index().SetUnique(true),
-	}
-	_, err := coll.Indexes().CreateOne(context.Background(), indexModel)
-	if err != nil {
-		panic("failed to create message id index: " + err.Error())
-	}
-
 	return &MessageRepo{collection: coll}
 }
 
@@ -49,7 +37,7 @@ func (r *MessageRepo) ListByChat(chatID string) ([]domain.Message, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cursor, err := r.collection.Find(ctx, map[string]string{"chatid": chatID})
+	cursor, err := r.collection.Find(ctx, map[string]string{"chat_id": chatID})
 	if err != nil {
 		return nil, err
 	}

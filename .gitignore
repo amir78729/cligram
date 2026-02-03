@@ -3,7 +3,6 @@
 *.exe~
 *.dll
 *.so
-*.dylib
 
 # Test binary, built with `go test -c`
 *.test
@@ -21,16 +20,18 @@ go.work.sum
 # IDE specific files
 .idea/
 .vscode/
+!.vscode/settings.json
 *.swp
 *.swo
 
 # OS generated files
 .DS_Store
 .DS_Store?
-ehthumbs.db
 Icon?
 Thumbs.db
 
 # Local environment files
 .env
 .env.local
+
+ctx.json

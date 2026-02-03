@@ -9,18 +9,24 @@ import (
 
 var serverURL = "http://localhost:8080"
 
-func postJSON(path string, data interface{}) {
-	body, _ := json.Marshal(data)
-	resp, err := http.Post(serverURL+path, "application/json", bytes.NewBuffer(body))
+func postJSON(baseURL, endpoint string, data interface{}) {
+	reqBody, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println("JSON marshal error:", err)
+		return
+	}
+
+	url := baseURL + endpoint
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
 		fmt.Println("Request error:", err)
 		return
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		fmt.Println("Success")
+	} else {
 		fmt.Println("Error:", resp.Status)
-		return
 	}
-	fmt.Println("Success")
 }

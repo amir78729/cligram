@@ -32,10 +32,17 @@ func main() {
 
 	// Chat endpoints
 	r.HandleFunc("/chats", server.CreateChatHandler).Methods("POST")
+	r.HandleFunc("/chats", server.ListChatsHandler).Methods("GET")
+	r.HandleFunc("/chats/{id}", server.GetChatHandler).Methods("GET")
 
 	// Message endpoints
 	r.HandleFunc("/messages", server.SendMessageHandler).Methods("POST")
 	r.HandleFunc("/messages", server.ListMessagesHandler).Methods("GET")
+
+	wsManager := api.NewWSManager()
+	r.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		server.HandleWS(wsManager, w, r)
+	})
 
 	httpHandler := api.LoggingMiddleware(r)
 

@@ -2,27 +2,42 @@ package main
 
 import (
 	"cligram/internal/cli"
+	"fmt"
 	"os"
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	args := os.Args[1:]
+	if len(args) < 1 {
 		printUsage()
 		return
 	}
 
-	switch os.Args[1] {
-	case "user":
-		cli.UserCmd(os.Args[2:])
-	case "chat":
-		cli.ChatCmd(os.Args[2:])
-	case "msg":
-		cli.MsgCmd(os.Args[2:])
-	default:
+	commands := map[string]func([]string){
+		"user":        cli.UserCmd,
+		"chat":        cli.ChatCmd,
+		"msg":         cli.MsgCmd,
+		"interactive": interactiveCmd,
+	}
+
+	cmd := args[0]
+	if handler, ok := commands[cmd]; ok {
+		handler(args[1:])
+	} else {
 		printUsage()
 	}
 }
 
+func interactiveCmd(args []string) {
+	if len(args) < 2 {
+		fmt.Println("Usage: cligram interactive <user_id> <server_addr>")
+		return
+	}
+	userID := args[0]
+	serverAddr := args[1]
+	cli.InteractiveChat(userID, serverAddr)
+}
+
 func printUsage() {
-	println("Usage: cligram <user|chat|msg> ...")
+	fmt.Println("Usage: cligram <user|chat|msg|interactive> ...")
 }
